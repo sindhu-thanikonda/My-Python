@@ -1,0 +1,148 @@
+# Getting Tweets from the twitter including dumps. 
+
+
+from __future__ import print_function
+from twython import TwythonStreamer
+from twython import Twython
+
+access_token = "3871020673-AIkzw386chsw5jnX2Tw02NjSWLjstDm4xyDWdOP"
+access_token_secret = "NNJF9Hp2uUsCevJH7uM6pBbBEYfD8vQbv43v7xUezec5M"
+consumer_key = "ZOkeCz2FUtqSwhl1Iy8mfjmXq"
+consumer_secret = "22JPeH05j4wWeID8ipkeRneG532TQ88koqvY01BS4jBXVgvBc9"
+
+#This is a basic listener that just prints received tweets to stdout.
+class MyStreamer(TwythonStreamer):
+    def on_success(self, data):
+        if 'text' in data:
+            print(data['text'].encode('utf-8'))
+
+    def on_error(self, status_code, data):
+        print(status_code)
+
+        # Want to stop trying to get data because of the error?
+        # Uncomment the next line!
+        # self.disconnect()
+if __name__ == '__main__':
+    '''
+stream = MyStreamer(consumer_key, consumer_secret,access_token, access_token_secret)
+    stream.statuses.filter(track='python')
+    '''
+    tfile  = open('ChennaiRainsJSON','w')
+    twitter = Twython(consumer_key, consumer_secret,access_token, access_token_secret)
+    results = twitter.cursor(twitter.search, q='#ChennaiRains')
+    for result in results:
+        print(result,file=tfile)
+
+
+# Removing the Dumps from Tweets. 
+
+
+import json
+with open("ChennaiRainsJSON", "r") as ins:
+    app = ins.read()
+data = app.splitlines()
+    
+with open("data", "w") as insf:
+    json.dump(data,insf)
+
+
+# Graphical way of representing the Tweets. 
+
+# Figure1.py 
+
+import numpy as np 
+import matplotlib.pyplot as plt
+
+box = dict(facecolor='yellow', pad=5, alpha=0.2)
+fig = plt.figure()
+fig.subplots_adjust(left=0.2, wspace=0.6)
+ax1 = fig.add_subplot(221)
+ax1.plot(2000*np.random.rand(10))
+ax1.set_title('ylabels not aligned')
+ax1.set_ylabel('misaligned 1', bbox=box)
+ax1.set_ylim(0, 2000)
+
+ax3 = fig.add_subplot(223)
+ax3.set_ylabel('misaligned 2',bbox=box)
+ax3.plot(np.random.rand(10))
+
+labelx = -0.3  # axes coords
+ax2 = fig.add_subplot(222)
+ax2.set_title('ylabels aligned')
+ax2.plot(2000*np.random.rand(10))
+ax2.set_ylabel('aligned 1', bbox=box)
+ax2.yaxis.set_label_coords(labelx, 0.5)
+ax2.set_ylim(0, 2000)
+
+ax4 = fig.add_subplot(224)
+ax4.plot(np.random.rand(10))
+ax4.set_ylabel('aligned 2', bbox=box)
+ax4.yaxis.set_label_coords(labelx, 0.5)
+plt.show()
+
+# Figure2.py 
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+t = np.arange(0.01, 10.0, 0.01)
+s1 = np.exp(t)
+ax1.plot(t, s1, 'b-')
+ax1.set_xlabel('time (s)')
+ax1.set_ylabel('exp')
+
+ax2 = ax1.twinx()
+s2 = np.sin(2*np.pi*t)
+ax2.plot(t, s2, 'r.')
+ax2.set_ylabel('sin')
+plt.show()
+
+# Figure3.py 
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+def f(t):
+    return np.exp(-t) * np.cos(2*np.pi*t)
+t1 = np.arange(0.0, 5.0, 0.1)
+t2 = np.arange(0.0, 5.0, 0.02)
+
+plt.figure(1)
+plt.subplot(211)
+plt.plot(t1, f(t1), 'bo', t2, f(t2), 'k')
+plt.subplot(212)
+plt.plot(t2, np.cos(2*np.pi*t2), 'r--')
+plt.show()
+
+# Figure4.py 
+
+import matplotlib.pyplot as plt
+import matplotlib.transforms as mtransforms
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.plot(range(10))
+ax.set_yticks((2,5,7))
+labels = ax.set_yticklabels(('really, really, really', 'long', 'labels'))
+
+def on_draw(event):
+   bboxes = []
+   for label in labels:
+       bbox = label.get_window_extent()
+       # the figure transform goes from relative coords->pixels and we
+       # want the inverse of that
+       bboxi = bbox.inverse_transformed(fig.transFigure)
+       bboxes.append(bboxi)
+
+   # this is the bbox that bounds all the bboxes, again in relative
+   # figure coords
+   bbox = mtransforms.Bbox.union(bboxes)
+   if fig.subplotpars.left < bbox.width:
+       # we need to move it over
+       fig.subplots_adjust(left=1.1*bbox.width) # pad a little
+       fig.canvas.draw()
+   return False
+fig.canvas.mpl_connect('draw_event', on_draw)
+plt.show()
